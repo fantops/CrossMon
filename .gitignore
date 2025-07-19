@@ -1,0 +1,20 @@
+# Ignore build directory
+build/
+
+# Ignore results folder
+results/
+
+# Ignore OS/IDE files
+.DS_Store
+*.swp
+*.swo
+*.user
+*.vcxproj*
+*.idea/
+
+# Ignore generated files
+*.o
+*.obj
+*.exe
+*.out
+*.log 
