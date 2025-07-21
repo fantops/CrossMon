@@ -11,8 +11,7 @@ CrossMon is a lightweight, cross-platform C++17 console tool for real-time syste
 - Unit tested core modules
 
 ## Flow Diagram
-
-<-------TBD------>
+![alt text](data/images/Block_Diagram.jpeg)
 
 ## High-Level Design (HLD)
 
