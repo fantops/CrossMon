@@ -5,6 +5,8 @@
 #include "cpu_monitor.hpp"
 #include "memory_monitor.hpp"
 #include "gpu_monitor.hpp"
+#include "memory_monitor.hpp"
+#include "gpu_monitor.hpp"
 #include <thread>
 #include <chrono>
 #include <vector>
@@ -149,14 +151,12 @@ void monitorCpuUsage(const MonitorArgs& args, std::vector<double>& samples) {
             std::this_thread::sleep_for(std::chrono::milliseconds(args.interval));
             double cpu = monitor->getCpuBusy();
             samples.push_back(cpu);
-            std::cout << "CPU Busy: " << cpu << "%" << std::endl;
         }
     } else {
         while (keepRunning) {
             std::this_thread::sleep_for(std::chrono::milliseconds(args.interval));
             double cpu = monitor->getCpuBusy();
             samples.push_back(cpu);
-            std::cout << "CPU Busy: " << cpu << "%" << std::endl;
         }
     }
     delete monitor;
