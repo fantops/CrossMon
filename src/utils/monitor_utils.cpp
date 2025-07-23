@@ -32,7 +32,7 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
     // Initialize CPU monitor and trigger GPU detection
     cpuMonitor->getCpuBusy();
     
-    // Trigger GPU enumeration to get accurate count and show debug info
+    // Trigger GPU enumeration to get accurate count
     GpuUsage initialGpuCheck = gpuMonitor->getGpuUsage();
     samples.gpuCount = gpuMonitor->getGpuCount();
     
@@ -64,7 +64,6 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
                       << "Memory: " << mem.usedPhysicalMB << " MB ("
                       << std::fixed << std::setprecision(1) << mem.usedPercentage << "%) | ";
             
-            std::cout << "[DEBUG: " << gpu.gpus.size() << " GPUs] ";
             if (gpu.gpus.size() > 1) {
                 std::cout << "GPUs: ";
                 for (size_t i = 0; i < gpu.gpus.size(); ++i) {
@@ -96,9 +95,6 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
             // Get GPU usage
             GpuUsage gpu = gpuMonitor->getGpuUsage();
             samples.gpuUtilization.push_back(gpu.averageUtilization);
-            
-            // Debug: Show GPU count during monitoring
-            std::cout << "[MONITOR DEBUG: " << gpu.gpus.size() << " GPUs] ";
             
             // Display current usage
             std::cout << "CPU: " << std::fixed << std::setprecision(1) << cpu << "% | "
@@ -149,14 +145,12 @@ void monitorCpuUsage(const MonitorArgs& args, std::vector<double>& samples) {
             std::this_thread::sleep_for(std::chrono::milliseconds(args.interval));
             double cpu = monitor->getCpuBusy();
             samples.push_back(cpu);
-            std::cout << "CPU Busy: " << cpu << "%" << std::endl;
         }
     } else {
         while (keepRunning) {
             std::this_thread::sleep_for(std::chrono::milliseconds(args.interval));
             double cpu = monitor->getCpuBusy();
             samples.push_back(cpu);
-            std::cout << "CPU Busy: " << cpu << "%" << std::endl;
         }
     }
     delete monitor;

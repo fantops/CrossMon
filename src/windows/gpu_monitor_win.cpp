@@ -93,7 +93,6 @@ public:
             pEnumerator->Release();
         } else {
             // Fallback: Use a simpler WMI query or estimate
-            std::cout << "DEBUG: GPU performance counters not available, using estimation" << std::endl;
         }
         
         // Build GPU info with utilization data
@@ -155,7 +154,6 @@ private:
         // Initialize COM
         HRESULT hres = CoInitializeEx(0, COINIT_MULTITHREADED);
         if (FAILED(hres)) {
-            std::cout << "DEBUG: Failed to initialize COM library" << std::endl;
             return;
         }
         
@@ -173,7 +171,6 @@ private:
         );
         
         if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
-            std::cout << "DEBUG: Failed to initialize security" << std::endl;
             CoUninitialize();
             return;
         }
@@ -186,7 +183,6 @@ private:
             IID_IWbemLocator, (LPVOID *) &pLoc);
         
         if (FAILED(hres)) {
-            std::cout << "DEBUG: Failed to create IWbemLocator object" << std::endl;
             CoUninitialize();
             return;
         }
@@ -204,7 +200,6 @@ private:
         );
         
         if (FAILED(hres)) {
-            std::cout << "DEBUG: Could not connect to WMI namespace" << std::endl;
             pLoc->Release();
             pLoc = nullptr;
             CoUninitialize();
@@ -224,7 +219,6 @@ private:
         );
         
         if (FAILED(hres)) {
-            std::cout << "DEBUG: Could not set proxy blanket" << std::endl;
             pSvc->Release();
             pSvc = nullptr;
             pLoc->Release();
@@ -234,7 +228,6 @@ private:
         }
         
         initialized = true;
-        std::cout << "DEBUG: WMI initialized successfully for GPU monitoring" << std::endl;
     }
     
     void cleanup() {
@@ -341,9 +334,6 @@ private:
         // Ensure realistic bounds
         if (baseUtilization < 0.0) baseUtilization = 0.0;
         if (baseUtilization > 95.0) baseUtilization = 95.0;
-        
-        std::cout << "DEBUG: Estimated " << gpuName << " utilization: " << baseUtilization << "% (factors: mem=" 
-                  << (memoryPressure*100) << "%, proc=" << processLoadFactor << ", time=" << timeVariation << ")" << std::endl;
         
         return baseUtilization;
     }
