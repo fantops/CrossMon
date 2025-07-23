@@ -11,6 +11,7 @@ results/
 *.user
 *.vcxproj*
 *.idea/
+.vscode/
 
 # Ignore generated files
 *.o
