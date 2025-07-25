@@ -25,21 +25,29 @@ cd "$(dirname "$0")/.."
 
 while true; do
     show_menu
-    read -p "Enter your choice (1-7): " choice
+    echo -n "Enter your choice (1-7): "
+    read choice
     
     case $choice in
         1)
             bash scripts/build_and_test_macos.sh
-            read -p "Press any key to continue..."
+            echo "Press any key to continue..."
+            read dummy
             ;;
         2)
             bash scripts/test_quick_macos.sh
+            echo "Press any key to continue..."
+            read dummy
             ;;
         3)
             bash scripts/test_gpu_detection_macos.sh
+            echo "Press any key to continue..."
+            read dummy
             ;;
         4)
             bash scripts/test_app_monitoring_macos.sh
+            echo "Press any key to continue..."
+            read dummy
             ;;
         5)
             echo "Running unit tests only..."
@@ -59,7 +67,8 @@ while true; do
             ctest --output-on-failure
             cd ..
             echo
-            read -p "Press any key to continue..."
+            echo "Press any key to continue..."
+            read dummy
             ;;
         6)
             if [ -f "build/crossmon" ]; then
@@ -68,7 +77,8 @@ while true; do
                 echo "CrossMon not built yet. Please run option 1 first."
             fi
             echo
-            read -p "Press any key to continue..."
+            echo "Press any key to continue..."
+            read dummy
             ;;
         7)
             echo "Goodbye!"
@@ -76,7 +86,8 @@ while true; do
             ;;
         *)
             echo "Invalid choice. Please try again."
-            read -p "Press any key to continue..."
+            echo "Press any key to continue..."
+            read dummy
             ;;
     esac
 done

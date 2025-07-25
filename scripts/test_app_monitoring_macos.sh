@@ -16,7 +16,8 @@ cd "$(dirname "$0")/.."
 if [ ! -f "build/crossmon" ]; then
     echo "Error: CrossMon executable not found!"
     echo "Please build the project first."
-    read -p "Press any key to continue..."
+    echo "Press any key to continue..."
+    read dummy
     exit 1
 fi
 
@@ -43,4 +44,5 @@ fi
 
 echo
 echo "Test completed!"
-read -p "Press any key to continue..."
+echo "Press any key to continue..."
+read dummy

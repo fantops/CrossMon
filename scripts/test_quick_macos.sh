@@ -20,7 +20,8 @@ if [ ! -f "build/crossmon" ]; then
     echo "  mkdir -p build && cd build"
     echo "  cmake .. && make"
     echo
-    read -p "Press any key to continue..."
+    echo "Press any key to continue..."
+    read dummy
     exit 1
 fi
 
@@ -28,7 +29,7 @@ echo "Starting CrossMon with 2-second intervals..."
 echo
 
 # Run in background for about 15 seconds
-timeout 15s ./build/crossmon -i 2000 > test_results_mac.txt 2>&1 || true
+gtimeout 15s ./build/crossmon -i 2000 > test_results_mac.txt 2>&1 || true
 
 echo
 echo "=== Test Results ==="
@@ -36,4 +37,5 @@ cat test_results_mac.txt
 
 echo
 echo "Test completed! Check test_results_mac.txt for full output."
-read -p "Press any key to continue..."
+echo "Press any key to continue..."
+read dummy

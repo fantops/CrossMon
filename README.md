@@ -2,6 +2,22 @@
 
 CrossMon is a lightweight, cross-platform C++17 console tool for real-time system monitoring. It provides comprehensive CPU, Memory, and GPU monitoring with both human-readable console output and machine-friendly file formats.
 
+## Requirements
+
+### Windows
+- Visual Studio 2019 or 2022 (any edition) **or** Visual Studio Build Tools 2019/2022
+- CMake 3.16 or later
+- Windows 10 or later
+
+### macOS
+- macOS 10.15 (Catalina) or later
+- Xcode Command Line Tools (for `clang` and `make`)
+- CMake 3.16 or later
+- [GNU coreutils](https://formulae.brew.sh/formula/coreutils) (for `gtimeout`):
+  ```sh
+  brew install coreutils
+  ```
+
 ## Features
 - ✅ **CPU Monitoring**: Real-time CPU utilization tracking
 - ✅ **Memory Monitoring**: Physical memory usage in MB and percentage
@@ -17,32 +33,76 @@ CrossMon is a lightweight, cross-platform C++17 console tool for real-time syste
 - ✅ **Modern C++17**: Modular, extensible, and well-tested codebase
 
 ## Flow Diagram
-![alt text](data/images/Block_Diagram.jpeg)
+┌───────────────────────────────┐
+│ User / Developer              │
+├───────────────────────────────┤
+│ Unified Build & Test Script   │
+│  (Windows: .bat, macOS: .sh)  │
+├───────────────────────────────┤
+│ 1. Configure & Build          │
+│ 2. Run Unit Tests             │
+│ 3. Quick Monitor Test         │
+│ 4. Log to results/            │
+├───────────────────────────────┤
+│ Main Application (CrossMon)   │
+├───────────────────────────────┤
+│ ┌─────────────┬─────────────┐ │
+│ │ CLI Manager │ Controller  │ │
+│ └─────────────┴─────────────┘ │
+├───────────────────────────────┤
+│ Platform-Agnostic API Layer   │
+├─────────┬─────────┬───────────┤
+│ CPU API │ GPU API │ Memory API│
+├─────────┼─────────┼───────────┤
+│ OS-Specific Adaptors          │
+│ (Windows/macOS)               │
+└─────────┴─────────┴───────────┘
 
 ## High-Level Design (HLD)
 
-CrossMon is structured in a layered, modular architecture:
+CrossMon now features a unified, script-driven build and test pipeline, modular architecture, and clear separation of platform-specific and cross-platform logic.
 
-```
-┌───────────────────────────────┐
-│ Command-Line Interface (CLI)  │  ← parses flags, prints output
-├───────────────────────────────┤
-│ Monitor Controller            │  ← orchestrates timing & aggregation
-├───────────────────────────────┤
-│ Platform-Agnostic API Layer   │  ← pure C++ interfaces
-├─────────┬─────────┬───────────┤
-│ CPU API │ GPU API │ NPU API   │  ← abstract base classes
-├─────────┼─────────┼───────────┤
-│ OS-Specific Adaptors          │  ← Windows / macOS impls
-└─────────┴─────────┴───────────┘
+```mermaid
+flowchart TD
+    A["User / Developer"]
+    B["Unified Build & Test Script<br/>(Windows: .bat, macOS: .sh)"]
+    C["Configure & Build"]
+    D["Run Unit Tests"]
+    E["Quick Monitor Test"]
+    F["Log to results/"]
+    G["Main Application (CrossMon)"]
+    H["CLI Manager"]
+    I["Monitor Controller"]
+    J["Platform-Agnostic API Layer"]
+    K["CPU API"]
+    L["GPU API"]
+    M["Memory API"]
+    N["OS-Specific Adaptors<br/>(Windows/macOS)"]
+
+    A --> B
+    B --> C
+    B --> D
+    B --> E
+    B --> F
+    F --> G
+    C --> G
+    D --> G
+    E --> G
+    G --> H
+    G --> I
+    G --> J
+    J --> K
+    J --> L
+    J --> M
+    K --> N
+    L --> N
+    M --> N
 ```
 
-- **CLI Manager**: Parses arguments, builds config, formats output
-- **Monitor Controller**: Initializes monitors, schedules sampling loop
-- **CPU Monitor**: Calculates CPU-busy delta between two snapshots
-- **Data Formatter**: Converts metrics to JSON or text
-- **Process Manager**: Launches and checks app status
-- **Statistics Module**: Computes peak, average, min, max
+- **Unified Build & Test Script**: Handles build, unit tests, and a quick monitor test for each platform, logging to the `results/` directory.
+- **Main Application**: Modular, with CLI, controller, and platform-agnostic APIs.
+- **Platform-Agnostic API Layer**: Defines interfaces for CPU, GPU, and Memory monitoring.
+- **OS-Specific Adaptors**: Implement platform-specific logic for Windows and macOS.
 
 ## Quick Start with Test Scripts
 
@@ -87,24 +147,26 @@ scripts/test_gpu_detection_macos.sh   # Test GPU detection
    git clone https://github.com/fantops/CrossMon.git
    cd CrossMon
    
-   # Automatic build with VS detection
-   build_release.bat
+   REM Build, run unit tests, and quick monitor test (Release)
+   scripts\build_and_test_windows.bat release
    
-   # Or manual CMake build
-   cmake -B build -G "Visual Studio 17 2022" -A x64
-   cmake --build build --config Release
+   REM For Debug build
+   scripts\build_and_test_windows.bat debug
    ```
 
-### macOS/Linux
+### macOS
 1. **Clone the repository:**
    ```sh
    git clone https://github.com/fantops/CrossMon.git
    cd CrossMon
    ```
-2. **Configure and build:**
+2. **Build, run unit tests, and quick monitor test:**
    ```sh
-   cmake -B build
-   cmake --build build
+   # For Release build
+   ./scripts/build_and_test_macos.sh release
+
+   # For Debug build
+   ./scripts/build_and_test_macos.sh debug
    ```
 
 ## Usage
@@ -196,7 +258,6 @@ CrossMon/
 ├── .gitignore                  # Git ignore rules
 ├── .vscode/                    # VS Code configuration
 ├── data/                       # Data files and resources
-│   └── images/
 ├── include/                    # Header files
 │   ├── cpu_monitor.hpp         # CPU monitoring interface
 │   ├── gpu_monitor.hpp         # GPU monitoring interface
@@ -285,59 +346,21 @@ CrossMon follows several key design patterns:
 
 ## Building
 
-### Quick Build (Release)
-For normal usage, use the release build which is optimized and has no debug output:
+### Quick Build, Test, and Monitor
 
 **Windows:**
 ```cmd
-build_release.bat
+scripts\build_and_test_windows.bat release
 ```
 
-The build script automatically detects your Visual Studio installation using:
-1. **vswhere.exe** (recommended) - Finds the latest VS installation
-2. **Fallback detection** - Checks common paths for VS 2019/2022 (Community/Professional/Enterprise)
-3. **CMake fallback** - Uses VS Build Tools if available
-
-**Manual build:**
-```cmd
-mkdir build_release
-cd build_release
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release
+**macOS:**
+```sh
+./scripts/build_and_test_macos.sh release
 ```
 
-### Debug Build
-For development and troubleshooting, use the debug build which includes detailed diagnostic output:
-
-**Windows:**
-```cmd
-build_debug.bat
-```
-
-**Manual build:**
-```cmd
-mkdir build_debug
-cd build_debug
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Debug
-cmake --build . --config Debug
-```
-
-### Debug Features
-When built in debug mode, CrossMon provides detailed diagnostic information:
-
-- **GPU Debug Output**: WMI query results, LUID parsing, adapter detection
-- **Initialization Details**: Component startup information
-- **Real-time Diagnostics**: GPU name resolution and utilization mapping
-
-Example debug output:
-```
-[DEBUG] WMI Query HR: 0x0
-[DEBUG] WMI Object 1: Name=pid_1234_luid_0x00000000_0x07F90766_phys_0_eng_0_engtype_3D, UtilType=8, Value="2"
-[DEBUG] Parsed LUID: 7f90766, Util: 2
-[DEBUG] Detected adapters: 2
-[DEBUG] Adapter LUID: 7ff50a1, Name: Intel(R) Iris(R) Xe Graphics
-[DEBUG] Found utilization for Intel(R) Iris(R) Xe Graphics: 2%
-```
+- Both scripts accept `debug` or `release` as a parameter.
+- They will build the project, run all unit tests, and perform a quick 15-second system monitor test.
+- Logs are saved to `results/build_and_test_<build_type>.log`.
 
 ## Run Unit Tests
 
@@ -352,14 +375,4 @@ ctest -C Release
 cd build
 ctest
 ```
-Or run individual test executables in `build/` (Windows: `build/Release/`).
-
-## Planned Extensions
-- NPU monitoring
-- JSON output format
-- Linux support (Windows and macOS currently supported)
-- macOS GPU monitoring implementation
-
----
-
-**CrossMon** is designed for extensibility and reliability. Contributions and suggestions are welcome!
+Or run individual test executables in `build/` (Windows: `build/Release/`

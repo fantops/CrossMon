@@ -16,7 +16,8 @@ cd "$(dirname "$0")/.."
 if [ ! -f "build/crossmon" ]; then
     echo "Error: CrossMon executable not found!"
     echo "Please build the project first."
-    read -p "Press any key to continue..."
+    echo "Press any key to continue..."
+    read dummy
     exit 1
 fi
 
@@ -24,7 +25,7 @@ echo "Testing GPU detection..."
 echo
 
 # Start the application briefly to capture GPU detection
-timeout 6s ./build/crossmon -i 5000 > gpu_detection_mac.txt 2>&1 || true
+gtimeout 6s ./build/crossmon -i 5000 > gpu_detection_mac.txt 2>&1 || true
 
 echo "=== GPU Detection Results ==="
 cat gpu_detection_mac.txt
@@ -33,4 +34,5 @@ echo
 echo "Compare this with Activity Monitor > Window > GPU History"
 echo "or System Information > Graphics/Displays to verify GPU detection."
 echo
-read -p "Press any key to continue..."
+echo "Press any key to continue..."
+read dummy
