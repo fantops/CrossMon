@@ -53,14 +53,33 @@ echo Build completed successfully!
 echo Build completed successfully! >> %LOG_FILE%
 echo.
 
-echo Step 2: Testing help functionality...
-echo Step 2: Testing help functionality... >> %LOG_FILE%
+echo Step 2: Running unit tests...
+echo Step 2: Running unit tests... >> %LOG_FILE%
+echo.
+echo Running all unit tests (including GPU tests)...
+echo Running all unit tests (including GPU tests)... >> %LOG_FILE%
+cd build
+ctest -C Release --output-on-failure >> "..\%LOG_FILE%" 2>&1
+set UNIT_TEST_RESULT=%ERRORLEVEL%
+cd ..
+
+if %UNIT_TEST_RESULT% NEQ 0 (
+    echo Warning: Some unit tests failed. Check log for details.
+    echo Warning: Some unit tests failed. Check log for details. >> %LOG_FILE%
+) else (
+    echo All unit tests passed!
+    echo All unit tests passed! >> %LOG_FILE%
+)
+
+echo.
+echo Step 3: Testing help functionality...
+echo Step 3: Testing help functionality... >> %LOG_FILE%
 echo.
 build\Release\crossmon.exe --help >> %LOG_FILE% 2>&1
 
 echo.
-echo Step 3: Quick system test...
-echo Step 3: Quick system test... >> %LOG_FILE%
+echo Step 4: Quick system test...
+echo Step 4: Quick system test... >> %LOG_FILE%
 echo.
 call scripts\test_quick_windows.bat "%LOG_FILE%"
 

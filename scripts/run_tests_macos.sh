@@ -10,12 +10,13 @@ show_menu() {
     echo
     echo "Choose a test to run:"
     echo
-    echo "1. Build and Test Everything"
+    echo "1. Build and Test Everything (includes unit tests)"
     echo "2. Quick System Monitor Test"
     echo "3. GPU Detection Test"
     echo "4. Application Monitoring Test (TextEdit)"
-    echo "5. Show Help"
-    echo "6. Exit"
+    echo "5. Unit Tests Only"
+    echo "6. Show Help"
+    echo "7. Exit"
     echo
 }
 
@@ -24,7 +25,7 @@ cd "$(dirname "$0")/.."
 
 while true; do
     show_menu
-    read -p "Enter your choice (1-6): " choice
+    read -p "Enter your choice (1-7): " choice
     
     case $choice in
         1)
@@ -41,6 +42,26 @@ while true; do
             bash scripts/test_app_monitoring_macos.sh
             ;;
         5)
+            echo "Running unit tests only..."
+            echo
+            if [ ! -d "build" ]; then
+                echo "Build directory not found. Building project first..."
+                echo
+                mkdir -p build
+                cd build
+                cmake .. -DCMAKE_BUILD_TYPE=Release
+                make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+                cd ..
+            fi
+            echo
+            echo "Running all unit tests (including new GPU tests)..."
+            cd build
+            ctest --output-on-failure
+            cd ..
+            echo
+            read -p "Press any key to continue..."
+            ;;
+        6)
             if [ -f "build/crossmon" ]; then
                 ./build/crossmon --help
             else
@@ -49,7 +70,7 @@ while true; do
             echo
             read -p "Press any key to continue..."
             ;;
-        6)
+        7)
             echo "Goodbye!"
             exit 0
             ;;

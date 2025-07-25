@@ -71,7 +71,7 @@ results/
 ├── test_quick.log
 ├── gpu_detection.log
 ├── app_monitoring.log
-└── unit_tests.log       # Includes GPU unit test results
+├── unit_tests.log       # Includes GPU unit test results
 ```
 
 ## Usage Examples

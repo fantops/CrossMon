@@ -51,12 +51,26 @@ echo
 echo "Build completed successfully!" | tee -a "$LOG_FILE"
 echo
 
-echo "Step 2: Testing help functionality..." | tee -a "$LOG_FILE"
+echo "Step 2: Running unit tests..." | tee -a "$LOG_FILE"
+echo
+cd build
+echo "Running all unit tests (including GPU tests)..." | tee -a "../$LOG_FILE"
+ctest --output-on-failure >> "../$LOG_FILE" 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "Warning: Some unit tests failed. Check log for details." | tee -a "../$LOG_FILE"
+else
+    echo "All unit tests passed!" | tee -a "../$LOG_FILE"
+fi
+cd ..
+
+echo
+echo "Step 3: Testing help functionality..." | tee -a "$LOG_FILE"
 echo
 ./build/crossmon --help | tee -a "$LOG_FILE"
 
 echo
-echo "Step 3: Quick system test..." | tee -a "$LOG_FILE"
+echo "Step 4: Quick system test..." | tee -a "$LOG_FILE"
 echo
 bash scripts/test_quick_macos.sh "$LOG_FILE"
 

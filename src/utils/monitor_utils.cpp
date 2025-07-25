@@ -32,9 +32,19 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
     // Initialize CPU monitor and trigger GPU detection
     cpuMonitor->getCpuBusy();
     
-    // Trigger GPU enumeration to get accurate count
+    // Get GPU count
     GpuUsage initialGpuCheck = gpuMonitor->getGpuUsage();
     samples.gpuCount = gpuMonitor->getGpuCount();
+    
+#ifdef _DEBUG
+    std::cout << "[DEBUG] GPU initialization complete. Count: " << samples.gpuCount << std::endl;
+    std::cout << "[DEBUG] Initial GPU check - Average utilization: " 
+              << initialGpuCheck.averageUtilization << "%" << std::endl;
+    for (size_t i = 0; i < initialGpuCheck.gpus.size(); ++i) {
+        std::cout << "[DEBUG] GPU " << i << ": " << initialGpuCheck.gpus[i].name 
+                  << " - " << initialGpuCheck.gpus[i].utilizationPercent << "%" << std::endl;
+    }
+#endif
     
     std::cout << "System Information:\n";
     std::cout << "GPUs detected: " << samples.gpuCount << std::endl;
@@ -64,11 +74,17 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
                       << "Memory: " << mem.usedPhysicalMB << " MB ("
                       << std::fixed << std::setprecision(1) << mem.usedPercentage << "%) | ";
             
+#ifdef _DEBUG
+            std::cout << "[DEBUG: " << gpu.gpus.size() << " GPUs] ";
+#endif
             if (gpu.gpus.size() > 1) {
                 std::cout << "GPUs: ";
                 for (size_t i = 0; i < gpu.gpus.size(); ++i) {
                     if (i > 0) std::cout << ", ";
                     std::cout << std::fixed << std::setprecision(1) << gpu.gpus[i].utilizationPercent << "%";
+#ifdef _DEBUG
+                    std::cout << "(" << gpu.gpus[i].name << ")";
+#endif
                 }
                 std::cout << " (avg: " << std::fixed << std::setprecision(1) << gpu.averageUtilization << "%)";
             } else {
@@ -101,12 +117,18 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
                       << "Memory: " << mem.usedPhysicalMB << " MB ("
                       << std::fixed << std::setprecision(1) << mem.usedPercentage << "%) | ";
             
+#ifdef _DEBUG
+            std::cout << "[DEBUG: " << gpu.gpus.size() << " GPUs] ";
+#endif
             // GPU display - individual GPUs if multiple detected
             if (gpu.gpus.size() > 1) {
                 std::cout << "GPUs: ";
                 for (size_t i = 0; i < gpu.gpus.size(); ++i) {
                     if (i > 0) std::cout << ", ";
                     std::cout << std::fixed << std::setprecision(1) << gpu.gpus[i].utilizationPercent << "%";
+#ifdef _DEBUG
+                    std::cout << "(" << gpu.gpus[i].name << ")";
+#endif
                 }
                 std::cout << " (avg: " << std::fixed << std::setprecision(1) << gpu.averageUtilization << "%)";
             } else {

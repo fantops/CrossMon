@@ -13,23 +13,25 @@ echo ========================================
 echo.
 echo Choose a test to run:
 echo.
-echo 1. Build and Test Everything
+echo 1. Build and Test Everything (includes unit tests)
 echo 2. Quick System Monitor Test
 echo 3. GPU Detection Test
 echo 4. Application Monitoring Test (Notepad)
-echo 5. Show Help
-echo 6. View Results Folder
-echo 7. Exit
+echo 5. Unit Tests Only
+echo 6. Show Help
+echo 7. View Results Folder
+echo 8. Exit
 echo.
-set /p choice="Enter your choice (1-7): "
+set /p choice="Enter your choice (1-8): "
 
 if "%choice%"=="1" goto BUILD_TEST
 if "%choice%"=="2" goto QUICK_TEST
 if "%choice%"=="3" goto GPU_TEST
 if "%choice%"=="4" goto APP_TEST
-if "%choice%"=="5" goto HELP_TEST
-if "%choice%"=="6" goto VIEW_RESULTS
-if "%choice%"=="7" goto EXIT
+if "%choice%"=="5" goto UNIT_TEST
+if "%choice%"=="6" goto HELP_TEST
+if "%choice%"=="7" goto VIEW_RESULTS
+if "%choice%"=="8" goto EXIT
 echo Invalid choice. Please try again.
 pause
 goto MENU
@@ -63,6 +65,26 @@ echo Running application monitoring test...
 echo Output will be logged to results folder.
 echo.
 call test_app_monitoring_windows.bat
+pause
+goto MENU
+
+:UNIT_TEST
+echo Running unit tests only...
+echo.
+cd /d "%~dp0\.."
+if not exist build (
+    echo Build directory not found. Building project first...
+    echo.
+    mkdir build
+    cmake -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build --config Release
+)
+echo.
+echo Running all unit tests (including new GPU tests)...
+cd build
+ctest -C Release --output-on-failure
+cd ..
+echo.
 pause
 goto MENU
 
