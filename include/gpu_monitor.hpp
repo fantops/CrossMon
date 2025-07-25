@@ -28,3 +28,18 @@ public:
     // Returns number of GPUs detected
     virtual size_t getGpuCount() const = 0;
 };
+
+/**
+ * Factory function for creating platform-specific GPU monitors.
+ * 
+ * This function creates and returns a pointer to a platform-specific implementation
+ * of the IGpuMonitor interface. The actual implementation depends on the target platform:
+ * - Windows: Uses WMI (Windows Management Instrumentation) and DXGI for GPU monitoring
+ * - macOS: Uses IOKit framework for GPU information access
+ * 
+ * The caller is responsible for managing the lifetime of the returned monitor instance.
+ * 
+ * @return Pointer to a platform-specific IGpuMonitor implementation, or nullptr if 
+ *         GPU monitoring is not supported on the current platform
+ */
+IGpuMonitor* createGpuMonitor();

@@ -29,7 +29,7 @@ private:
     };
 
     std::vector<Adapter> adapters_;
-    IWbemServices* pSvc_ = nullptr;
+    IWbemServices* wmiServices_ = nullptr;
     bool initialized_ = false;
 
     static uint64_t luidToKey(const LUID& luid) {
@@ -51,27 +51,27 @@ private:
             return false;
         }
 
-        IWbemLocator* pLoc = nullptr;
+        IWbemLocator* wmiLocator = nullptr;
         hr = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
-                              IID_IWbemLocator, (LPVOID*)&pLoc);
+                              IID_IWbemLocator, (LPVOID*)&wmiLocator);
         if (FAILED(hr)) {
             CoUninitialize();
             return false;
         }
 
-        hr = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), nullptr, nullptr, 0, 0, 0, 0, &pSvc_);
-        pLoc->Release();
+        hr = wmiLocator->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), nullptr, nullptr, 0, 0, 0, 0, &wmiServices_);
+        wmiLocator->Release();
         
         if (FAILED(hr)) {
             CoUninitialize();
             return false;
         }
 
-        hr = CoSetProxyBlanket(pSvc_, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
+        hr = CoSetProxyBlanket(wmiServices_, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
                                RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE,
                                nullptr, EOAC_NONE);
         if (FAILED(hr)) {
-            pSvc_->Release();
+            wmiServices_->Release();
             CoUninitialize();
             return false;
         }
@@ -128,8 +128,8 @@ public:
     }
 
     ~WindowsGpuMonitor() override {
-        if (pSvc_) {
-            pSvc_->Release();
+        if (wmiServices_) {
+            wmiServices_->Release();
         }
         if (initialized_) {
             CoUninitialize();
@@ -146,30 +146,30 @@ public:
 
     GpuUsage getGpuUsage() override {
         GpuUsage usage;
-        if (!initialized_ || !pSvc_) {
+        if (!initialized_ || !wmiServices_) {
             return usage;
         }
 
         std::map<uint64_t, double> maxUtilByLuid;
 
-        IEnumWbemClassObject* pEnum = nullptr;
-        HRESULT hr = pSvc_->ExecQuery(
+        IEnumWbemClassObject* wmiEnumerator = nullptr;
+        HRESULT hr = wmiServices_->ExecQuery(
             bstr_t("WQL"),
             bstr_t("SELECT Name, UtilizationPercentage FROM Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine"),
             WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-            nullptr, &pEnum);
+            nullptr, &wmiEnumerator);
 
 #ifdef _DEBUG
         std::cout << "[DEBUG] WMI Query HR: 0x" << std::hex << hr << std::dec << std::endl;
 #endif
 
         if (SUCCEEDED(hr)) {
-            IWbemClassObject* pObj = nullptr;
+            IWbemClassObject* wmiObject = nullptr;
             ULONG ret = 0;
 #ifdef _DEBUG
             int objectCount = 0;
 #endif
-            while (pEnum->Next(WBEM_INFINITE, 1, &pObj, &ret) == S_OK) {
+            while (wmiEnumerator->Next(WBEM_INFINITE, 1, &wmiObject, &ret) == S_OK) {
 #ifdef _DEBUG
                 objectCount++;
 #endif
@@ -177,8 +177,8 @@ public:
                 VariantInit(&vName);
                 VariantInit(&vUtil);
                 
-                pObj->Get(L"Name", 0, &vName, nullptr, nullptr);
-                pObj->Get(L"UtilizationPercentage", 0, &vUtil, nullptr, nullptr);
+                wmiObject->Get(L"Name", 0, &vName, nullptr, nullptr);
+                wmiObject->Get(L"UtilizationPercentage", 0, &vUtil, nullptr, nullptr);
 
 #ifdef _DEBUG
                 std::wcout << L"[DEBUG] WMI Object " << objectCount << L": Name=" 
@@ -277,12 +277,12 @@ public:
                 
                 VariantClear(&vName);
                 VariantClear(&vUtil);
-                pObj->Release();
+                wmiObject->Release();
             }
 #ifdef _DEBUG
             std::cout << "[DEBUG] Total WMI objects found: " << objectCount << std::endl;
 #endif
-            pEnum->Release();
+            wmiEnumerator->Release();
         }
 #ifdef _DEBUG
         else {

@@ -77,14 +77,21 @@ scripts/test_gpu_detection_macos.sh   # Test GPU detection
 
 ### Windows (Visual Studio)
 1. **Prerequisites:**
-   - Visual Studio 2019 or later with C++ support
-   - CMake 3.16 or later
+   - **Visual Studio 2019/2022** (Community, Professional, or Enterprise) with C++ support
+   - **Alternative**: Visual Studio Build Tools 2019/2022
+   - **CMake 3.16** or later
+   - **Note**: Build scripts automatically detect your VS installation
 
 2. **Clone and build:**
    ```cmd
    git clone https://github.com/fantops/CrossMon.git
    cd CrossMon
-   cmake -B build -G "Visual Studio 16 2019"
+   
+   # Automatic build with VS detection
+   build_release.bat
+   
+   # Or manual CMake build
+   cmake -B build -G "Visual Studio 17 2022" -A x64
    cmake --build build --config Release
    ```
 
@@ -285,6 +292,11 @@ For normal usage, use the release build which is optimized and has no debug outp
 ```cmd
 build_release.bat
 ```
+
+The build script automatically detects your Visual Studio installation using:
+1. **vswhere.exe** (recommended) - Finds the latest VS installation
+2. **Fallback detection** - Checks common paths for VS 2019/2022 (Community/Professional/Enterprise)
+3. **CMake fallback** - Uses VS Build Tools if available
 
 **Manual build:**
 ```cmd
