@@ -32,32 +32,6 @@ CrossMon is a lightweight, cross-platform C++17 console tool for real-time syste
 - ✅ **Graceful Shutdown**: Clean exit with Ctrl+C and comprehensive statistics
 - ✅ **Modern C++17**: Modular, extensible, and well-tested codebase
 
-## Flow Diagram
-┌───────────────────────────────┐
-│ User / Developer              │
-├───────────────────────────────┤
-│ Unified Build & Test Script   │
-│  (Windows: .bat, macOS: .sh)  │
-├───────────────────────────────┤
-│ 1. Configure & Build          │
-│ 2. Run Unit Tests             │
-│ 3. Quick Monitor Test         │
-│ 4. Log to results/            │
-├───────────────────────────────┤
-│ Main Application (CrossMon)   │
-├───────────────────────────────┤
-│ ┌─────────────┬─────────────┐ │
-│ │ CLI Manager │ Controller  │ │
-│ └─────────────┴─────────────┘ │
-├───────────────────────────────┤
-│ Platform-Agnostic API Layer   │
-├─────────┬─────────┬───────────┤
-│ CPU API │ GPU API │ Memory API│
-├─────────┼─────────┼───────────┤
-│ OS-Specific Adaptors          │
-│ (Windows/macOS)               │
-└─────────┴─────────┴───────────┘
-
 ## High-Level Design (HLD)
 
 CrossMon now features a unified, script-driven build and test pipeline, modular architecture, and clear separation of platform-specific and cross-platform logic.
@@ -250,11 +224,8 @@ When using `-o` option, statistics are saved to the specified file for further a
 
 ```
 CrossMon/
-├── build_debug.bat              # Debug build with diagnostic output
-├── build_release.bat            # Optimized production build
 ├── CMakeLists.txt              # Main build configuration
 ├── README.md                   # Project documentation
-├── Block_Diagram.jpeg          # Architecture diagram
 ├── .gitignore                  # Git ignore rules
 ├── .vscode/                    # VS Code configuration
 ├── data/                       # Data files and resources
@@ -305,8 +276,6 @@ CrossMon/
 ├── build_release/           # Release build directory (generated)
 └── results/                 # Test script output logs (generated)
     ├── build_and_test.log
-    ├── test_quick.log
-    ├── gpu_detection.log
     └── unit_tests.log
 ```
 
@@ -375,4 +344,3 @@ ctest -C Release
 cd build
 ctest
 ```
-Or run individual test executables in `build/` (Windows: `build/Release/`
