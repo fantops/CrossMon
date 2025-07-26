@@ -58,7 +58,7 @@ while true; do
                 mkdir -p build
                 cd build
                 cmake .. -DCMAKE_BUILD_TYPE=Release
-                make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+                make -j$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
                 cd ..
             fi
             echo

@@ -13,6 +13,9 @@ echo
 # Get script directory and go to project root
 cd "$(dirname "$0")/.."
 
+# Create results directory
+mkdir -p results
+
 # Check if the executable exists
 if [ ! -f "build/crossmon" ]; then
     echo "Error: CrossMon executable not found!"
@@ -29,13 +32,22 @@ echo "Starting CrossMon with 2-second intervals..."
 echo
 
 # Run in background for about 15 seconds
-gtimeout 15s ./build/crossmon -i 2000 > test_results_mac.txt 2>&1 || true
+# Use timeout if available, otherwise run without timeout
+if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout 15s ./build/crossmon -i 2000 > results/test_results_mac.txt 2>&1 || true
+else
+    # Run for 15 seconds without timeout
+    ./build/crossmon -i 2000 > results/test_results_mac.txt 2>&1 &
+    CROSSMON_PID=$!
+    sleep 15
+    kill $CROSSMON_PID 2>/dev/null || true
+fi
 
 echo
 echo "=== Test Results ==="
-cat test_results_mac.txt
+cat results/test_results_mac.txt
 
 echo
-echo "Test completed! Check test_results_mac.txt for full output."
+echo "Test completed! Check results/test_results_mac.txt for full output."
 echo "Press any key to continue..."
 read dummy

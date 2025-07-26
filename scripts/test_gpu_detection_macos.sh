@@ -12,6 +12,9 @@ echo
 # Get script directory and go to project root
 cd "$(dirname "$0")/.."
 
+# Create results directory
+mkdir -p results
+
 # Check if the executable exists
 if [ ! -f "build/crossmon" ]; then
     echo "Error: CrossMon executable not found!"
@@ -25,10 +28,19 @@ echo "Testing GPU detection..."
 echo
 
 # Start the application briefly to capture GPU detection
-gtimeout 6s ./build/crossmon -i 5000 > gpu_detection_mac.txt 2>&1 || true
+# Use timeout if available, otherwise run without timeout
+if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout 6s ./build/crossmon -i 5000 > results/gpu_detection_mac.txt 2>&1 || true
+else
+    # Run for 6 seconds without timeout
+    ./build/crossmon -i 5000 > results/gpu_detection_mac.txt 2>&1 &
+    CROSSMON_PID=$!
+    sleep 6
+    kill $CROSSMON_PID 2>/dev/null || true
+fi
 
 echo "=== GPU Detection Results ==="
-cat gpu_detection_mac.txt
+cat results/gpu_detection_mac.txt
 
 echo
 echo "Compare this with Activity Monitor > Window > GPU History"
