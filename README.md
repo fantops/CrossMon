@@ -24,6 +24,9 @@ CrossMon is a lightweight, cross-platform C++17 console tool for real-time syste
 - ✅ **GPU Monitoring**: Multi-GPU detection and utilization tracking
   - Windows: WMI-based monitoring for all GPU vendors (NVIDIA, AMD, Intel)
   - macOS: IOKit-based monitoring (future implementation)
+- ✅ **NPU Monitoring**: (Experimental) NPU detection and usage reporting
+  - Windows: Stub implementation, ready for future DirectML/WinML or vendor SDK integration
+  - macOS: Not supported (stub)
 - ✅ **Cross-Platform**: Windows and macOS support
 - ✅ **Application-Specific Monitoring**: Monitor system usage while specific apps run
 - ✅ **Flexible Output**: Console display + file output with statistics
@@ -91,6 +94,7 @@ scripts\run_tests_windows.bat
 scripts\build_and_test_windows.bat     # Build and test everything
 scripts\test_quick_windows.bat         # 15-second system monitor test
 scripts\test_gpu_detection_windows.bat # Test GPU detection
+scripts\test_npu_detection_windows.bat # Test NPU detection (experimental)
 ```
 
 ### macOS
@@ -105,6 +109,7 @@ scripts/run_tests_macos.sh
 scripts/build_and_test_macos.sh       # Build and test everything
 scripts/test_quick_macos.sh           # 15-second system monitor test  
 scripts/test_gpu_detection_macos.sh   # Test GPU detection
+scripts/test_npu_detection_macos.sh  # Test NPU detection (stub)
 ```
 
 ## Build Instructions
@@ -188,7 +193,7 @@ GPUs detected: 2
 Monitoring system usage...
 Press Ctrl+C to stop and see statistics.
 
-CPU: 15.2% | Memory: 8192 MB (45.3%) | GPUs: 2.0%, 0.0% (avg: 1.0%)
+CPU: 15.2% | Memory: 8192 MB (45.3%) | GPUs: 2.0%, 0.0% (avg: 1.0%) | NPU: Stub NPU (Windows 11+) 0.0%
 CPU: 12.8% | Memory: 8156 MB (45.1%) | GPU: 0.0%
 CPU: 18.4% | Memory: 8203 MB (45.4%) | GPUs: 1.5%, 0.0% (avg: 0.8%)
 ```
@@ -215,6 +220,10 @@ GPU Statistics:
   Average Utilization: 0.8%
   Peak Utilization: 2.1%
   Minimum Utilization: 0.0%
+
+NPU Statistics (experimental):
+  NPU Name: Stub NPU (Windows 11+)
+  Usage: 0.0%
 ```
 
 ### File Output
@@ -251,11 +260,14 @@ CrossMon/
 │   │   └── statistics.cpp
 │   └── windows/              # Windows-specific implementations
 │       └── gpu_monitor_win.cpp # Windows GPU monitoring (WMI-based)
+│       └── npu_monitor_win.cpp # Windows NPU monitoring (stub/experimental)
 ├── test/                     # Unit tests
 │   ├── test_cpu_monitor_mac.cpp
 │   ├── test_cpu_monitor_win.cpp
 │   ├── test_gpu_monitor_mac.cpp  # macOS GPU monitoring tests
 │   ├── test_gpu_monitor_win.cpp  # Windows GPU monitoring tests
+│   ├── test_npu_monitor_mac.cpp  # macOS NPU monitoring tests (stub)
+│   ├── test_npu_monitor_win.cpp  # Windows NPU monitoring tests (stub/experimental)
 │   ├── test_monitor_args.cpp
 │   ├── test_process_manager.cpp
 │   └── test_statistics.cpp
@@ -267,6 +279,8 @@ CrossMon/
 │   ├── test_quick_macos.sh         # Quick functionality test (macOS)
 │   ├── test_gpu_detection_windows.bat  # GPU-specific testing
 │   ├── test_gpu_detection_macos.sh     # GPU-specific testing (macOS)
+│   ├── test_npu_detection_windows.bat  # NPU-specific testing (Windows, experimental)
+│   ├── test_npu_detection_macos.sh     # NPU-specific testing (macOS, stub)
 │   ├── test_app_monitoring_windows.bat # Application monitoring test
 │   ├── test_app_monitoring_macos.sh    # Application monitoring test (macOS)
 │   ├── run_tests_windows.bat       # Unit test runner
@@ -344,3 +358,17 @@ ctest -C Release
 cd build
 ctest
 ```
+
+## Contributing
+
+We welcome contributions! To help us maintain a high-quality, robust codebase, please follow these guidelines:
+
+- **Fork the repository** and create a feature branch for your changes.
+- **Write clear, modular code** and follow the existing style and structure.
+- **Add or update unit tests** for any new features or bug fixes.
+- **Test your changes** on all supported platforms (Windows, macOS) if possible.
+- **Update documentation** (README, scripts/README.md) as needed.
+- **Open a Pull Request** with a clear description of your changes and testing steps.
+- For major features or refactors, please open an issue or discussion first to coordinate design.
+
+Thank you for helping make CrossMon better!

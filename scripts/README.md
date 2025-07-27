@@ -20,6 +20,14 @@ This folder contains scripts for building, testing, and validating CrossMon on b
 ## Other Scripts
 - **run_tests_macos.sh / run_tests_windows.bat**: Interactive test menus.
 - **test_app_monitoring_*.sh/.bat, test_gpu_detection_*.sh/.bat**: Specialized tests for app monitoring and GPU detection.
+- **test_npu_detection_*.sh/.bat**: Experimental NPU detection/monitoring tests (Windows: stub, macOS: stub)
+
+## Contributing
+
+We welcome improvements to scripts and tests! Please:
+- Keep scripts cross-platform where possible
+- Add comments and usage instructions
+- Update this README if you add or change scripts
 
 ## Notes
 - Make sure you have the required dependencies installed for your platform.
