@@ -1,6 +1,8 @@
 #include "gpu_monitor.hpp"
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <dxgi.h>
 #include <dxgi1_2.h>
@@ -59,7 +61,9 @@ private:
             return false;
         }
 
-        hr = wmiLocator->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), nullptr, nullptr, 0, 0, 0, 0, &wmiServices_);
+        BSTR serverPath = SysAllocString(L"ROOT\\CIMV2");
+        hr = wmiLocator->ConnectServer(serverPath, nullptr, nullptr, 0, 0, 0, 0, &wmiServices_);
+        SysFreeString(serverPath);
         wmiLocator->Release();
         
         if (FAILED(hr)) {
@@ -153,11 +157,15 @@ public:
         std::map<uint64_t, double> maxUtilByLuid;
 
         IEnumWbemClassObject* wmiEnumerator = nullptr;
+        BSTR queryLanguage = SysAllocString(L"WQL");
+        BSTR queryText = SysAllocString(L"SELECT Name, UtilizationPercentage FROM Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine");
         HRESULT hr = wmiServices_->ExecQuery(
-            bstr_t("WQL"),
-            bstr_t("SELECT Name, UtilizationPercentage FROM Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine"),
+            queryLanguage,
+            queryText,
             WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
             nullptr, &wmiEnumerator);
+        SysFreeString(queryLanguage);
+        SysFreeString(queryText);
 
 #ifdef _DEBUG
         std::cout << "[DEBUG] WMI Query HR: 0x" << std::hex << hr << std::dec << std::endl;

@@ -1,6 +1,7 @@
 #include "utils/statistics.hpp"
 #include <algorithm>
 #include <numeric>
+#include <string>
 
 CpuStats computeCpuStats(const std::vector<double>& values) {
     CpuStats stats;
@@ -43,6 +44,24 @@ GpuStats computeGpuStats(const std::vector<double>& utilization, std::size_t gpu
     }
     
     // GPU utilization stats
+    stats.peakUtilization = *std::max_element(utilization.begin(), utilization.end());
+    stats.avgUtilization = std::accumulate(utilization.begin(), utilization.end(), 0.0) / utilization.size();
+    stats.minUtilization = *std::min_element(utilization.begin(), utilization.end());
+    stats.maxUtilization = stats.peakUtilization;
+    
+    return stats;
+}
+
+NpuStats computeNpuStats(const std::vector<double>& utilization, const std::string& npuName) {
+    NpuStats stats;
+    stats.samples = utilization.size();
+    stats.npuName = npuName;
+    
+    if (utilization.empty()) {
+        return stats;
+    }
+    
+    // NPU utilization stats
     stats.peakUtilization = *std::max_element(utilization.begin(), utilization.end());
     stats.avgUtilization = std::accumulate(utilization.begin(), utilization.end(), 0.0) / utilization.size();
     stats.minUtilization = *std::min_element(utilization.begin(), utilization.end());

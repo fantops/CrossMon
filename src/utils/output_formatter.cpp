@@ -78,14 +78,54 @@ void writeGpuStatsToFile(const GpuStats& stats, const std::string& path) {
     }
 }
 
+void printNpuStatsToConsole(const NpuStats& stats) {
+    if (stats.samples > 0) {
+        std::cout << "\n--- NPU Usage Statistics ---\n";
+        std::cout << "NPU:             " << stats.npuName << std::endl;
+        std::cout << "Samples:         " << stats.samples << std::endl;
+        std::cout << "Peak NPU:        " << std::fixed << std::setprecision(1) << stats.peakUtilization << "%" << std::endl;
+        std::cout << "Avg NPU:         " << std::fixed << std::setprecision(1) << stats.avgUtilization << "%" << std::endl;
+        std::cout << "Min NPU:         " << std::fixed << std::setprecision(1) << stats.minUtilization << "%" << std::endl;
+        std::cout << "Max NPU:         " << std::fixed << std::setprecision(1) << stats.maxUtilization << "%" << std::endl;
+    } else {
+        std::cout << "\n--- NPU Usage Statistics ---\n";
+        std::cout << "NPU:             " << (stats.npuName.empty() ? "Not available" : stats.npuName) << std::endl;
+        std::cout << "Samples:         0" << std::endl;
+    }
+}
+
+void writeNpuStatsToFile(const NpuStats& stats, const std::string& path) {
+    std::ofstream out(path, std::ios::app); // Append mode
+    if (out) {
+        out << "\nNPU Usage Statistics\n";
+        out << "NPU:             " << (stats.npuName.empty() ? "Not available" : stats.npuName) << "\n";
+        out << "Samples:         " << stats.samples << "\n";
+        if (stats.samples > 0) {
+            out << "Peak NPU:        " << stats.peakUtilization << "%\n";
+            out << "Avg NPU:         " << stats.avgUtilization << "%\n";
+            out << "Min NPU:         " << stats.minUtilization << "%\n";
+            out << "Max NPU:         " << stats.maxUtilization << "%\n";
+        }
+        out.close();
+    } else {
+        std::cerr << "Failed to write NPU stats to " << path << std::endl;
+    }
+}
+
 void printSystemStatsToConsole(const SystemStats& stats) {
     printCpuStatsToConsole(stats.cpu);
     printMemoryStatsToConsole(stats.memory);
     printGpuStatsToConsole(stats.gpu);
+#ifdef _WIN32
+    printNpuStatsToConsole(stats.npu);
+#endif
 }
 
 void writeSystemStatsToFile(const SystemStats& stats, const std::string& path) {
     writeCpuStatsToFile(stats.cpu, path);
     writeMemoryStatsToFile(stats.memory, path);
     writeGpuStatsToFile(stats.gpu, path);
+#ifdef _WIN32
+    writeNpuStatsToFile(stats.npu, path);
+#endif
 } 

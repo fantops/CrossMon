@@ -9,7 +9,9 @@ struct SystemSamples {
     std::vector<uint64_t> memoryUsedMB;
     std::vector<double> memoryUsedPercent;
     std::vector<double> gpuUtilization;
+    std::vector<double> npuUtilization;
     std::size_t gpuCount = 0;
+    std::string npuName = "";
 };
 
 void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples);

@@ -5,6 +5,9 @@
 #include "cpu_monitor.hpp"
 #include "memory_monitor.hpp"
 #include "gpu_monitor.hpp"
+#ifdef _WIN32
+#include "npu_monitor.hpp"
+#endif
 #include <thread>
 #include <chrono>
 #include <vector>
@@ -29,6 +32,17 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
     IMemoryMonitor* memoryMonitor = createMemoryMonitor();
     IGpuMonitor* gpuMonitor = createGpuMonitor();
     
+#ifdef _WIN32
+    NPUMonitor* npuMonitor = create_windows_npu_monitor();
+    bool npuAvailable = npuMonitor->initialize();
+    if (npuAvailable) {
+        NPUUsage npuInfo = npuMonitor->get_usage();
+        samples.npuName = npuInfo.name;
+    }
+#else
+    bool npuAvailable = false;
+#endif
+    
     // Initialize CPU monitor and trigger GPU detection
     cpuMonitor->getCpuBusy();
     
@@ -48,6 +62,15 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
     
     std::cout << "System Information:\n";
     std::cout << "GPUs detected: " << samples.gpuCount << std::endl;
+#ifdef _WIN32
+    if (npuAvailable) {
+        std::cout << "NPU detected: " << samples.npuName << std::endl;
+    } else {
+        std::cout << "NPU: Not available" << std::endl;
+    }
+#else
+    std::cout << "NPU: Not supported on this platform" << std::endl;
+#endif
     
     if (!args.appName.empty()) {
         std::cout << "Monitoring system usage while " << args.appName << " is running...\n";
@@ -68,6 +91,16 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
             // Get GPU usage
             GpuUsage gpu = gpuMonitor->getGpuUsage();
             samples.gpuUtilization.push_back(gpu.averageUtilization);
+            
+            // Get NPU usage
+#ifdef _WIN32
+            double npuUsage = 0.0;
+            if (npuAvailable) {
+                NPUUsage npu = npuMonitor->get_usage();
+                npuUsage = npu.usage_percent;
+            }
+            samples.npuUtilization.push_back(npuUsage);
+#endif
             
             // Display current usage with individual GPU info
             std::cout << "CPU: " << std::fixed << std::setprecision(1) << cpu << "% | "
@@ -90,6 +123,12 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
             } else {
                 std::cout << "GPU: " << std::fixed << std::setprecision(1) << gpu.averageUtilization << "%";
             }
+            
+#ifdef _WIN32
+            if (npuAvailable) {
+                std::cout << " | NPU: " << std::fixed << std::setprecision(1) << npuUsage << "%";
+            }
+#endif
             std::cout << std::endl;
         }
     } else {
@@ -111,6 +150,16 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
             // Get GPU usage
             GpuUsage gpu = gpuMonitor->getGpuUsage();
             samples.gpuUtilization.push_back(gpu.averageUtilization);
+            
+            // Get NPU usage
+#ifdef _WIN32
+            double npuUsage = 0.0;
+            if (npuAvailable) {
+                NPUUsage npu = npuMonitor->get_usage();
+                npuUsage = npu.usage_percent;
+            }
+            samples.npuUtilization.push_back(npuUsage);
+#endif
             
             // Display current usage
             std::cout << "CPU: " << std::fixed << std::setprecision(1) << cpu << "% | "
@@ -135,6 +184,12 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
                 std::cout << "GPU: " << std::fixed << std::setprecision(1) << gpu.averageUtilization << "%";
             }
             
+#ifdef _WIN32
+            if (npuAvailable) {
+                std::cout << " | NPU: " << std::fixed << std::setprecision(1) << npuUsage << "%";
+            }
+#endif
+            
             std::cout << std::endl;
         }
     }
@@ -142,6 +197,9 @@ void monitorSystemUsage(const MonitorArgs& args, SystemSamples& samples) {
     delete cpuMonitor;
     delete memoryMonitor;
     delete gpuMonitor;
+#ifdef _WIN32
+    delete npuMonitor;
+#endif
 }
 
 void outputSystemStatistics(const SystemSamples& samples, const std::string& resultPath) {
@@ -149,6 +207,9 @@ void outputSystemStatistics(const SystemSamples& samples, const std::string& res
     stats.cpu = computeCpuStats(samples.cpuUsage);
     stats.memory = computeMemoryStats(samples.memoryUsedMB, samples.memoryUsedPercent);
     stats.gpu = computeGpuStats(samples.gpuUtilization, samples.gpuCount);
+#ifdef _WIN32
+    stats.npu = computeNpuStats(samples.npuUtilization, samples.npuName);
+#endif
     
     printSystemStatsToConsole(stats);
     

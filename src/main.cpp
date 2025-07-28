@@ -60,18 +60,5 @@ int main(int argc, char* argv[]) {
     // Output statistics
     outputSystemStatistics(samples, args.resultPath);
 
-#ifdef _WIN32
-    NPUMonitor* npu_monitor = create_windows_npu_monitor();
-    if (npu_monitor->initialize()) {
-        NPUUsage npu = npu_monitor->get_usage();
-        std::cout << "NPU: " << npu.name << " | Usage: " << npu.usage_percent << "%\n";
-    } else {
-        std::cout << "NPU monitoring not available." << std::endl;
-    }
-    delete npu_monitor;
-#else
-    std::cout << "NPU monitoring not supported on this platform." << std::endl;
-#endif
-
     return 0;
 } 
