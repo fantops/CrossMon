@@ -31,23 +31,66 @@ fi
 echo "Starting CrossMon with 2-second intervals..."
 echo
 
-# Run in background for about 15 seconds
-# Use timeout if available, otherwise run without timeout
-if command -v gtimeout >/dev/null 2>&1; then
-    gtimeout 15s ./build/crossmon -i 2000 > results/test_results_mac.txt 2>&1 || true
+# Create results directory if it doesn't exist
+mkdir -p results
+
+# Create console output log file with timestamp
+CONSOLE_LOG="results/crossmon_console_quick_$(date +%Y%m%d_%H%M%S).log"
+cat > "$CONSOLE_LOG" << EOF
+
+CrossMon Quick Test Console Output
+Generated: $(date)
+========================================
+
+EOF
+
+echo "Console output will be saved to: $CONSOLE_LOG"
+
+# Start CrossMon with console output capture
+echo "Starting CrossMon with console output capture..."
+./build/crossmon -i 2000 >> "$CONSOLE_LOG" 2>&1 &
+CROSSMON_PID=$!
+
+# Wait a moment for process to start
+sleep 2
+
+# Check if process is still running
+if kill -0 $CROSSMON_PID 2>/dev/null; then
+    echo "CrossMon is running (PID: $CROSSMON_PID), monitoring for 13 more seconds..."
+    sleep 13
+    
+    # Try graceful termination first
+    echo "Stopping CrossMon..."
+    if kill -TERM $CROSSMON_PID 2>/dev/null; then
+        # Wait up to 3 seconds for graceful shutdown
+        for i in 1 2 3; do
+            if ! kill -0 $CROSSMON_PID 2>/dev/null; then
+                break
+            fi
+            sleep 1
+        done
+        
+        # Force kill if still running
+        if kill -0 $CROSSMON_PID 2>/dev/null; then
+            echo "Forcing termination..."
+            kill -KILL $CROSSMON_PID 2>/dev/null || true
+        fi
+    fi
+    echo "Test completed!"
+    echo "Console output saved to: $CONSOLE_LOG"
 else
-    # Run for 15 seconds without timeout
-    ./build/crossmon -i 2000 > results/test_results_mac.txt 2>&1 &
-    CROSSMON_PID=$!
-    sleep 15
-    kill $CROSSMON_PID 2>/dev/null || true
+    echo "Warning: CrossMon failed to start or exited early"
 fi
 
 echo
-echo "=== Test Results ==="
-cat results/test_results_mac.txt
+echo "=== Console Output Preview ==="
+if [ -f "$CONSOLE_LOG" ]; then
+    tail -20 "$CONSOLE_LOG"
+else
+    echo "No console output captured"
+fi
 
 echo
-echo "Test completed! Check results/test_results_mac.txt for full output."
+echo "Test completed! Full console output saved to: $CONSOLE_LOG"
 echo "Press any key to continue..."
 read dummy

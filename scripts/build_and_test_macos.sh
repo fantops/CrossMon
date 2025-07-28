@@ -56,17 +56,54 @@ cd ..
 echo "Step 3: Quick system monitor test..." | tee -a "$LOG_FILE"
 if [ -f "$BUILD_DIR/crossmon" ]; then
     echo "Running CrossMon for 15 seconds with 2s intervals..." | tee -a "$LOG_FILE"
-    # Use timeout if available, otherwise run without timeout
-    if command -v gtimeout >/dev/null 2>&1; then
-        gtimeout 15s ./$BUILD_DIR/crossmon -i 2000 >> "$LOG_FILE" 2>&1 || true
+    
+    # Create console output log file
+    CONSOLE_LOG="results/crossmon_console_${BUILD_TYPE}.log"
+    mkdir -p results
+    cat > "$CONSOLE_LOG" << EOF
+
+CrossMon Console Output Log - ${BUILD_TYPE} Build
+Generated: $(date)
+========================================
+
+EOF
+    
+    # Start CrossMon with console output capture
+    echo "Starting CrossMon with console output capture..." | tee -a "$LOG_FILE"
+    ./$BUILD_DIR/crossmon -i 2000 >> "$CONSOLE_LOG" 2>&1 &
+    CROSSMON_PID=$!
+    
+    # Wait a moment for process to start
+    sleep 2
+    
+    # Check if process is still running
+    if kill -0 $CROSSMON_PID 2>/dev/null; then
+        echo "CrossMon is running (PID: $CROSSMON_PID), monitoring for 13 more seconds..." | tee -a "$LOG_FILE"
+        sleep 13
+        
+        # Try graceful termination first
+        echo "Stopping CrossMon..." | tee -a "$LOG_FILE"
+        if kill -TERM $CROSSMON_PID 2>/dev/null; then
+            # Wait up to 3 seconds for graceful shutdown
+            for i in 1 2 3; do
+                if ! kill -0 $CROSSMON_PID 2>/dev/null; then
+                    break
+                fi
+                sleep 1
+            done
+            
+            # Force kill if still running
+            if kill -0 $CROSSMON_PID 2>/dev/null; then
+                echo "Forcing termination..." | tee -a "$LOG_FILE"
+                kill -KILL $CROSSMON_PID 2>/dev/null || true
+            fi
+        fi
     else
-        # Run for 15 seconds without timeout
-        ./$BUILD_DIR/crossmon -i 2000 >> "$LOG_FILE" 2>&1 &
-        CROSSMON_PID=$!
-        sleep 15
-        kill $CROSSMON_PID 2>/dev/null || true
+        echo "Warning: CrossMon failed to start or exited early" | tee -a "$LOG_FILE"
     fi
+    
     echo "Quick test completed!" | tee -a "$LOG_FILE"
+    echo "Console output saved to: $CONSOLE_LOG" | tee -a "$LOG_FILE"
 else
     echo "Error: crossmon not found in $BUILD_DIR!" | tee -a "$LOG_FILE"
 fi
