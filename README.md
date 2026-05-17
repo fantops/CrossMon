@@ -2,6 +2,8 @@
 
 CrossMon is a lightweight, cross-platform C++17 console tool for real-time system monitoring. It provides comprehensive CPU, Memory, and GPU monitoring with both human-readable console output and machine-friendly file formats.
 
+> **Used as a submodule by [EdgeOptimizer](https://github.com/fantops/EdgeOptimizer)** to feed its `SystemSampler` with CPU/Memory/GPU/NPU utilisation alongside ONNX Runtime EP-assignment and energy data. CrossMon is standalone — nothing in this repo depends on EdgeOptimizer.
+
 ## Requirements
 
 ### Windows
